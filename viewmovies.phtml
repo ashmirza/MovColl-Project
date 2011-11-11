@@ -1,0 +1,228 @@
+<?php
+session_start();
+//view detailed movie data.
+include 'dbclass.phtml';
+if(!isset($_SESSION[userid])) {
+   header( 'Location: index.phtml' ) ;
+   exit();
+}
+if(!isset($_GET[movid])) {
+   header( 'Location: addmovie.phtml' ) ;
+}
+
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<?php
+/* Name: Ashraf Mirza & Andrew Sicard-Woodall
+  class: INT525A
+  Final Project - Movie Collection
+*/
+$db = new Database;
+
+?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+<title>Movie Collection</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Language" content="English" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="/css/tmdb.css" media="screen" />
+</head>
+<?php
+$sql = "SELECT background FROM movf WHERE movieid='".$_GET[movid]."'";
+$res = $db->query($sql);
+if($res)
+{
+while($row=$res->fetch_object()) {
+$bg=$row->background;
+}
+}
+
+if ($bg) { echo '<body style="background:#FFFFFF url('.$bg.') repeat-y fixed top center; font-family: Verdana, Tahoma, Arial, sans-serif; width: 100%; font-size: 12px; padding: 0; margin: 0; color: #FFF5EE; line-height: 20px;" >';
+}
+else {
+echo "<body>";
+}
+?>
+<div id="wrap">
+<div id="headerbg">
+<div id="header">
+<h1><a href="index.phtml">Movie Collection</a></h1>
+
+</div>
+</div>
+<div id="menu">
+<ul>
+    <li><a href="index.phtml">Home</a></li>
+	<li><a href="logout.phtml">Logout</a></li>
+<!-- Add Menu Items here if needed -->
+</ul>
+</div>
+
+<div id="content">
+<!-- Left Navigation -->
+<div id="left">
+<h2>Categories: </h2>
+<div class="box">
+<ul>
+<li><a href="movie.phtml">Your Collection</a></li>  
+<li><a href="addmovie.phtml">Add a movie</a></li>  
+</ul>
+</div>
+</div>
+
+<div id="right">
+<?php
+if(isset($_GET[movid])) {
+$postform="<form method=post action=".$_SERVER['PHP_SELF']."?movid=".$_GET[movid]."><input type=hidden name=movid value=".$_GET['movid']."><input type=submit name=submit value=\"Delete Movie\">";
+
+$sql = "SELECT * FROM movf WHERE movieid='".$_GET[movid]."'";
+$res = $db->query($sql);
+
+if($res) {
+while ($newArray = $db->fetch_array($res)) {
+						//calculate result # based on page # limit and count each result on page and set vars from associative array
+						$fnum = ((($page * $limit) - $limit) + ($count + 1));
+						$movid = $newArray['movieid'];
+						$movname = $newArray['moviename'];
+						$reldate = $newArray['releasedate'];
+						$plot = $newArray['plot'];
+						$trailer = $newArray['trailer'];
+						$rating = $newArray['rating'];
+						$genre = $newArray['genre'];
+						$imdbid = $newArray['imdb_id'];
+						$studio = $newArray['studio'];
+						$poster = $newArray['poster'];
+						$background = $newArray['background'];
+				
+						
+							$date=date( 'Y-m-d H:i:s' );
+							if(isset($_POST[movid])) {
+							$sql2= "DELETE FROM ".$_SESSION[uname]."movies WHERE movieid = '".$_GET[movid]."'";
+							$res2=$db->query($sql2);
+							if($res2) { 
+							echo "<br /><br /><span id=activmsg>The movie was Deleted from your collection!</span>";
+							exit();
+							}
+						
+							}
+					else {
+						
+						
+						?>
+						
+						<div id="enclosmovf">
+						<?php
+						echo "<h2>";
+						echo $movname;
+						echo $postform;
+						echo "</h2>";
+
+						echo "<div id=\"rightimg\"><img src=\"" . $poster . "\"alt=\"" . $movname . "\" /></div>";
+						?>
+						<div id="movoutcontainerf">
+						<div id="movdetailsf">
+						<?php
+						if (!empty($imdbid)) {
+						echo "<p class=\"movdetailsf\"><a href=http://www.imdb.com/title/" . $imdbid . " target=\"_blank\"> IMDB PAGE </a>";
+						}
+						echo "<br />";
+						echo "<p class=\"movdetailsf\"><a href=http://www.themoviedb.org/movie/" . $movid . " target=\"_blank\"> tmDB PAGE </a>";
+						echo "<br />";
+						if (!empty($trailer)) {
+						echo "<a href=" . $trailer . " target=\"_blank\"> Trailer </a>";
+						echo "<br />";
+						}
+						echo "<br />";
+						if (!empty($reldate)) echo "Release Date: " . $reldate . "";
+						else echo "Release Date: Not Available";
+						echo "<br />";
+						
+						$sql3="SELECT name FROM moviecrew WHERE movieid=".$movid." AND job='Director'";
+							$res3=$db->query($sql3);
+							while ($newArray3 = $db->fetch_array($res3)) {
+							$dirname=$newArray3['name'];
+							echo "Directed by: <strong>".$dirname."</strong><br />";
+							}
+							
+						
+						echo "Rating: " . $rating . "";
+						echo "<br />";
+						
+						echo "<br /><strong>Plot overview:</strong> <br />";
+							if (!empty($plot)){
+							echo $plot ."<br /><br />";
+							}
+							else echo "Not Available <br /><br />";
+							
+						$sql3="SELECT * FROM moviecrew WHERE movieid='".$movid."' AND job='Actor'";
+						$res3=$db->query($sql3);
+						if($res3) {
+									while ($newArray3 = $db->fetch_array($res3)) {
+									$pid3=$newArray3['personid'];
+									$name3=$newArray3['name'];
+									$movname3=$newArray3['moviename'];
+									$movid3=$newArray3['movieid'];
+									$job3=$newArray3['job'];
+									$thumb3=$newArray3['thumbimg'];
+									$role3=$newArray3['actorrole'];
+									
+									if($thumb3!="") {
+									echo "<img height=34 width=23 src=\"".$thumb3."\"\>";
+									}
+									else echo "<img height=34 width=23 src=\"/images/images/NoPhotoAvailable.jpg\"\>";
+									echo "   Actor: ". $name3 ." as ". $role3 ." <br /><br />";
+									}
+						}
+						else echo "NO ACTORS :(";
+						
+					
+			
+			
+						
+						?>
+						</div>
+						</div>
+						</div>
+						<?php
+						
+						
+						
+		
+					}
+		}
+	}
+	else {
+	echo "<span id=activmsg>There was an error, we could not find the movie you were looking for in our collection please click on Add a movie and try your search again with tmDB.</span>";
+	}
+	}
+	else echo "<span id=activmsg>There was an error in processing your request. Please try again later.</span>";
+	
+	
+	
+
+
+
+
+?>
+<div id="footer">
+<br />
+<?php
+include 'footer.phtml';
+?>
+
+</div> <!--closing footer -->
+</div> <!-- closing right -->
+
+
+</div> <!-- closing content -->
+
+
+
+</div> <!-- closing wrap -->
+
+</body>
+
+</html>
+

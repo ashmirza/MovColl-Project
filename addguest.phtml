@@ -1,0 +1,201 @@
+<?php
+session_start();
+/* Name: Ashraf Mirza & Andrew Sicard-Woodall
+  class: INT525A
+  Final Project - Movie Collection
+*/
+if(!isset($_SESSION[userid])) {
+  $redirect="yes";
+  header( "refresh:5;url=index.phtml" );
+  $redirectmsg="You are not logged in, you are being redirected to the login page. If you are not redirected click on Home above.";
+}
+?>
+<?php
+/* MySQL connection */
+include 'dbclass.phtml';
+$db = new Database;	
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Register - Movie Collection</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Language" content="English" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="/css/tmdb.css" media="screen" />
+</head>
+<?php
+$sql = "SELECT background FROM movf ORDER BY RAND() LIMIT 1";
+$res= $db->query($sql);
+if($res)
+{
+while($row=$res->fetch_object()) {
+$bg=$row->background;
+}
+}
+
+if ($bg) { echo '<body style="background:#FFFFFF url('.$bg.') repeat-y fixed top center; font-family: Verdana, Tahoma, Arial, sans-serif; width: 100%; font-size: 12px; padding: 0; margin: 0; color: #FFF5EE; line-height: 20px;" >';
+}
+else {
+echo "<body>";
+}
+?>
+<div id="wrap">
+<div id="headerbg">
+<div id="header">
+<h1><a href="index.phtml">Movie Collection</a></h1>
+
+</div>
+</div>
+<div id="menu">
+<ul>
+    <li><a href="index.phtml">Home</a></li>
+	<li><a href="logout.phtml">Logout</a></li>
+	<!-- Add Menu Items here if needed -->
+</ul>
+</div>
+
+<div id="content">
+<!-- Left Navigation -->
+<div id="left">
+<h2>Categories: </h2>
+<div class="box">
+<ul>
+<li><a href="movie.phtml">Your Collection</a></li>  
+<li><a href="addmovie.phtml">Add a Movie</a></li>
+<li><a href="addguest.phtml">Invite Guest</a></li>  
+</ul>
+</div>
+</div>
+
+<?php
+$errorcount=0;
+	if(isset($_POST[submit])) {
+		if(trim($_POST[email])==''){
+			$emailerror="Please enter an email address in the email address field. <br />";
+			$errorcount++;
+		}
+		else {
+			if(!eregi("^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-99]+)*(\.[a-z]{2,3})$", $_POST[email])) {
+				$emailerror="The email address you entered is not in the proper format. The format should be username@domain.com. <br />";
+				$errorcount++;
+			}	
+		}
+ }
+		
+	
+	?>
+
+	
+<div id="right">
+<?php if(!isset($_POST[submit]) || ($errorcount>0)) {
+echo "<h2>Registration Form</h2>";
+}
+elseif(isset($_POST[submit]) && ($errorcount=="0")) {
+echo "<h2>Invite Guest</h2>";
+} ?>
+<br /><br />
+<?php if(!isset($_POST[submit]) || ($errorcount>0)) {
+?>	
+<form id="form" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+	<fieldset>
+		<legend>Invite Guest</legend>
+	          		
+			<span id="errormsg"> * All Fields are required </span>
+			<br /> <br /> <br />
+			<label for="email">E-mail Address:</label> 
+			<input type="text" name="email" id="email" value="<?php $_POST[email] ?>"/> <?php "<span id=\"errormsg\">" .$emailerror ."</span>" ?>
+			<br />
+			
+			<br />
+			
+			
+			
+			<?php if($errorcount>0) echo "<span id=\"errormsg\"> There are ".$errorcount." errors in the form please fix them before you can proceed. </span> <br />";?>
+			<label for="submit"></label>
+			<input type="submit" name="submit" value="Submit" class="button">
+		</fieldset>
+	</form>
+<?php
+}
+?>
+<?php
+	if(isset($_POST[submit]) && ($errorcount=="0")) {
+		//set user input to hard vars
+        $uname=$_SESSION['uname'];
+		$email=trim($_POST[email]);
+				
+                $activatehash=md5($uname.$email);
+				$sql= "INSERT guests (usersguest, email, activatehash) VALUES ('".$uname."', '".$_POST[email]."', '".$activatehash."')";
+                
+				$res = $db->query($sql);
+				if ($res) {
+	
+				require_once('phpmailer/class.phpmailer.php');
+				$mail             = new PHPMailer();
+	
+				$mail->IsSMTP(); // telling the class to use SMTP
+				$mail->Host       = "smtp.gmail.com"; // SMTP server
+				//$mail->SMTPDebug  = 2;                     // enables SMTP debug information (for testing)
+														   // 1 = errors and messages
+														   // 2 = messages only
+				$mail->SMTPAuth   = true;                  // enable SMTP authentication
+				$mail->SMTPSecure = "ssl";                 // sets the prefix to the servier
+				$mail->Host       = "smtp.gmail.com";      // sets GMAIL as the SMTP server
+				$mail->Port       = 465;                   // set the SMTP port for the GMAIL server
+				$mail->Username   = "movcoll@gmail.com";  // GMAIL username
+				$mail->Password   = "jamesbond";            // GMAIL password
+
+				$mail->SetFrom('movcoll@gmail.com', 'Movie Collection');
+
+				$mail->AddReplyTo("movcoll@gmail.com","Movie Collection");
+
+				$mail->Subject    = "Hello Guest, $_SESSION[fname], $_SESSION[lname] has invited you to view their movie collection.!";
+				$body = "Hello Guest,<br />You have been invited to view $_SESSION[fname], $_SESSION[lname]'s movie collection. Click the link below or paste it into the URL bar of your browser<br />http://main/phtml/tmdb/activateg.phtml?activate=".$activatehash."<br />Thanks!";
+				//$mail->AltBody    = "To view the message, please use an HTML compatible email viewer!"; // optional, comment out and test
+
+				$mail->MsgHTML($body);
+
+				$address = $email;
+				$mail->AddAddress($address, $uname);
+
+				//$mail->AddAttachment("images/phpmailer.gif");      // attachment
+				//$mail->AddAttachment("images/phpmailer_mini.gif"); // attachment
+
+				if(!$mail->Send()) {
+				  echo "Mailer Error: " . $mail->ErrorInfo;
+				  echo "<span id=\"activmsg\">Could not sign you up at this time please try again later.</span>";
+				} 
+				else { 
+						//echo "Message sent!";
+						
+							echo "<span id=\"activmsg\">Your Guest was invited.</span> <br /> <br />";
+						
+				    }
+
+				
+				
+	           }
+            }
+    
+?>
+<div id="footer">			
+<br />
+<?php
+include 'footer.phtml';
+?>
+
+</div> <!--closing footer -->
+</div> <!-- closing right -->
+
+
+</div> <!-- closing content -->
+
+
+
+</div> <!-- closing wrap -->
+
+</body>
+
+</html>
+

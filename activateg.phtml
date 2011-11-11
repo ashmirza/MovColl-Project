@@ -1,0 +1,225 @@
+<?php
+session_start();
+/* Name: Ashraf Mirza & Andrew Sicard-Woodall
+  class: INT525A
+  Final Project - Movie Collection
+*/
+$adjacents=2;
+?>
+<?php
+/* MySQL connection */
+include 'dbclass.phtml';
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Activate Account - Movie Collection</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Language" content="English" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="/css/tmdb2.css" media="screen" />
+</head>
+<?php
+$db = new Database;
+$sql = "SELECT background FROM movf ORDER BY RAND() LIMIT 1";
+$res= $db->query($sql);
+if($res)
+{
+while($row=$res->fetch_object()) {
+$bg=$row->background;
+}
+}
+
+if ($bg) { echo '<body style="background:#FFFFFF url('.$bg.') repeat-y fixed top center; font-family: Verdana, Tahoma, Arial, sans-serif; width: 100%; font-size: 12px; padding: 0; margin: 0; color: #FFF5EE; line-height: 20px;" >';
+}
+else {
+echo "<body>";
+}
+?>
+<div id="wrap">
+<div id="headerbg">
+<div id="header">
+<h1><a href="/movie.html">Movie Collection</a></h1>
+
+</div>
+</div>
+<div id="menu">
+<ul>
+    <li><a href="index.phtml">Home</a></li>
+	<li><a href="register.phtml">Register</a></li>
+<!-- Add Menu Items here if needed -->
+</ul>
+</div>
+
+<div id="content">
+<!-- Left Navigation -->
+<div id="left">
+<h2>Categories: </h2>
+<div class="box">
+<ul>
+<li><a href=<?php echo "viewmoviesg.phtml?activate=".$_GET[activate].">Back to Collection</a></li>"; ?>  
+</ul>
+</div>
+</div>
+
+	
+<div id="right">
+<h2>Welcome Guest</h2>
+<?php
+if(!isset($_GET[page])) $page=0;
+else $page=$_GET[page];
+if(!isset($_GET['activate'])) {
+echo "<span id=\"activmsg\">You do not have the credentials to activate your account, please try again or Register again!</span>";
+}
+else 
+	{
+	   $_SESSION[activate]=$_GET[activate];
+		$check="SELECT * FROM guests WHERE activatehash='".$_GET['activate']."'";
+		$res= $db->query($check);
+		if ($res) {
+			$nofrows = $db->numrows($res);
+		}
+		if($nofrows>=1) {
+        while($row=$res->fetch_object()) {
+        $uname=$row->usersguest;
+        }
+        }
+                  
+			if(isset($_GET[sort])) {
+            $sql = "SELECT movf.*, ".$uname."movies.* FROM movies, ".$uname."movies WHERE ".$uname."movies.movieid = movf.movieid ORDER BY mof.".$_GET[sort]." ASC";
+            }
+            else $sql = "SELECT movf.*, ".$uname."movies.* FROM movies, ".$uname."movies WHERE ".$uname."movies.movieid = movf.movieid ORDER BY movf.moviename ASC";
+            $res= $db->query($sql);
+	        echo "Your friend has <strong>". $db->numrows($res) ." movies</strong> in their collection. Please view them below.<br /><br />";
+            echo "You can sort movies by Movie name, release date, rating or genre by clicking on the table headers for each one.<br /><br />";
+            $num = $db->numrows($res);
+	           #echo $mysqli->error;
+	        include 'paginateg.phtml';
+            echo $pagination;
+            echo "<br />";
+            $sql = $sql." LIMIT $start,$limit";
+            $res= $db->query($sql);
+            if($res)
+	        {
+	
+	       ?>
+		<table>
+            <tr>
+                <th>Number</th>
+                <th>Poster</th>
+                <th><a href=<?php echo $_SERVER['PHP_SELF']."?activate=".$_GET[activate]."&sort=moviename>Movie Name</a></th>"; ?>
+                <th><a href=<?php echo $_SERVER['PHP_SELF']."?activate=".$_GET[activate]."&sort=releasedate>Release Date</a></th>"; ?>
+                <th><a href=<?php echo $_SERVER['PHP_SELF']."?activate=".$_GET[activate]."&sort=rating>Rating</a></th>"; ?>
+                <th>Trailer</th>
+                <th><a href=<?php echo $_SERVER['PHP_SELF']."?activate=".$_GET[activate]."&sort=genre>Genre</a></th>";?>
+                <th>IMDB</th>
+                <th>tmDB</th>
+                <th>Studio</th>
+
+            </tr>
+        
+        <?php
+        $count=0;
+		while ($newArray = $db->fetch_array($res)) {
+						//calculate result # based on page # limit and count each result on page and set vars from associative array
+						$fnum = ((($page * $limit) - $limit) + ($count + 1));
+						$movid = $newArray['movieid'];
+						$movname = $newArray['moviename'];
+						$reldate = $newArray['releasedate'];
+						$plot = $newArray['plot'];
+						$trailer = $newArray['trailer'];
+						$rating = $newArray['rating'];
+						$genre = $newArray['genre'];
+						$imdbid = $newArray['imdb_id'];
+						$studio = $newArray['studio'];
+						$poster = $newArray['poster'];
+						$background = $newArray['background'];
+						$useridmovieadded = $newArray['useridmovieadded'];
+						$favstatus = $newArray['favstatus'];
+						$loanstatus = $newArray['loanstatus'];
+						$dateadded = $newArray['dateadded'];
+						?>
+						<tr>
+						<?php
+                        
+                        echo "<td>".$fnum."</td>";
+                        echo "<td><div id=\"rightimg2\"><a href=viewmoviesg.phtml?activate=".$_GET[activate]."&movid=".$movid."><img src=\"" . $poster . "\"alt=\"" . $movname . "\" /></a></div></td>";
+                        echo "<td><a href=viewmoviesg.phtml?activate=".$_GET[activate]."&movid=".$movid.">";
+						echo $movname;
+						#echo $mysqli->error;
+						echo "</a></td>";
+						
+                                         
+						if(!empty($reldate)) echo "<td>". $reldate . "</td>";
+						else echo "<td>Not Available</td>";
+						
+                        if(!empty($rating)) {
+                            echo "<td>".$rating."</td>";
+                        }
+                        else echo "<td>Not Available</td>";
+                        
+                            
+                        if(!empty($trailer)) {
+						echo "<td><a href=" . $trailer . " target=\"_blank\"> Trailer </a></td>";
+                        }
+						else echo "<td>Not Available</td>";
+						
+                        if(!empty($genre)) {
+						echo "<td>" . $genre . "</td>";
+                        }
+						else echo "<td>Not Available</td>";
+                        					                        
+						if(!empty($imdbid)) {
+						echo "<td><p class=\"movdetailsf\"><a href=http://www.imdb.com/title/" . $imdbid . " target=\"_blank\"> IMDB PAGE </a></td>";
+						}
+                        else { echo "<td>Not Available</td>";}
+                        
+						echo "<td><p class=\"movdetailsf\"><a href=http://www.themoviedb.org/movie/" . $movid . " target=\"_blank\"> tmDB PAGE </a></td>";
+						
+						if(!empty($studio)) {
+						echo "<td>" . $studio . "</td>";
+                        }
+						else echo "<td>Not Available</td>";
+                    
+                        $count++;					
+						?>
+                        </tr>
+						<?php
+						
+						
+						
+					}
+                   
+	       }
+	
+      	
+		else
+		{
+			echo "<span id=\"activmsg\">Error Try again later!</span>";
+		}	
+		
+		
+	}	
+?>
+
+<div id="footer">
+<br />
+<?php
+include 'footer.phtml';
+?>
+
+</div> <!--closing footer -->
+</div> <!-- closing right -->
+
+
+</div> <!-- closing content -->
+
+
+
+</div> <!-- closing wrap -->
+
+</body>
+
+
+</html>
+

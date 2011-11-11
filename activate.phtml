@@ -1,0 +1,122 @@
+<?php
+session_start();
+/* Name: Ashraf Mirza & Andrew Sicard-Woodall
+  class: INT525A
+  Final Project - Movie Collection
+*/
+?>
+<?php
+/* MySQL connection */
+/* include DB connection Class */
+include 'dbclass.phtml';
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Activate Account - Movie Collection</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Language" content="English" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="/css/tmdb.css" media="screen" />
+</head>
+<?php
+/*new instance of Database class */
+$db = new Database;
+$sql = "SELECT background FROM movf ORDER BY RAND() LIMIT 1";
+$res= $db->query($sql);
+    if($res)
+    {
+        while($row=$res->fetch_object()) {
+        $bg=$row->background;
+        }
+    }
+
+if ($bg) { echo '<body style="background:#FFFFFF url('.$bg.') repeat-y fixed top center; font-family: Verdana, Tahoma, Arial, sans-serif; width: 100%; font-size: 12px; padding: 0; margin: 0; color: #FFF5EE; line-height: 20px;" >'; }
+else {
+echo "<body>";
+}
+?>
+<div id="wrap">
+<div id="headerbg">
+<div id="header">
+<h1><a href="/movie.html">Movie Collection</a></h1>
+
+</div>
+</div>
+<div id="menu">
+<ul>
+    <li><a href="index.phtml">Home</a></li>
+	<li><a href="register.phtml">Register</a></li>
+<!-- Add Menu Items here if needed -->
+</ul>
+</div>
+
+<div id="content">
+<!-- Left Navigation -->
+<div id="left">
+<h2>Categories: </h2>
+<div class="box">
+<ul>
+<li><a href="#">Testing</a></li>  
+</ul>
+</div>
+</div>
+
+	
+<div id="right">
+<h2>Activate Account</h2>
+<?php
+if((!isset($_GET['hash'])) || (!isset($_GET['activate']))) {
+echo "<span id=\"activmsg\">You do not have the credentials to activate your account, please try again or Register again!</span>";
+}
+else 
+	{
+		$check="SELECT userid FROM there WHERE activecode='".$_GET['activate']."' AND emailhash='".$_GET['hash']."' AND activate_status='1'";
+		$res= $db->query($check);
+		if ($res) {
+			$nofrows = $db->numrows($res);
+		}
+		if($nofrows>=1) {
+			echo "<span id=\"activmsg\"><strong>You have already activated your account, click on Home to Login!</strong></span>";
+		}
+		else
+		{
+			$sql="UPDATE there SET activate_status='1' WHERE activecode='".$_GET['activate']."' AND emailhash='".$_GET['hash']."' AND activate_status='0'";
+			$res= $db->query($sql);
+			if ($db->rowsaffected()==1) 
+				{
+					echo "<span id=\"activmsg\"><strong>Congratulations</strong>, You have activated your account, click on Home to Login!</span>";
+				}
+				elseif ($db->rowsaffected()==0)
+				{
+					echo "<span id=\"activmsg\">We could not find your account, please register again or email <strong>movcoll@gmail.com</strong> with your email to see if your account was deleted.</span>";
+				}
+				elseif ($db->rowsaffected()>1) { 
+					echo "<span id=\"activmsg\">There is an error in your account please email <strong>movcoll@gmail.com</strong> with your email address and username to resolve this error.</span>";
+				}
+		}
+		
+		
+	}	
+?>
+
+<div id="footer">
+<br />
+<?php
+include 'footer.phtml';
+?>
+
+</div> <!--closing footer -->
+</div> <!-- closing right -->
+
+
+</div> <!-- closing content -->
+
+
+
+</div> <!-- closing wrap -->
+
+</body>
+
+
+</html>

@@ -1,0 +1,291 @@
+<?php
+session_start();
+
+include 'tmdbclass.phtml';
+include 'dbclass.phtml';
+if(!isset($_SESSION[userid])) {
+   header( 'Location: index.phtml' ) ;
+   exit();
+}
+if(!isset($_GET[movid])) {
+   header( 'Location: addmovie.phtml' ) ;
+}
+
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<?php
+/* Name: Ashraf Mirza & Andrew Sicard-Woodall
+  class: INT525A
+  Final Project - Movie Collection
+*/
+
+
+?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+<title>Movie Collection</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Language" content="English" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="/css/tmdb.css" media="screen" />
+</head>
+<?php
+$tmdb = new tmdb;
+$xml = $tmdb->getMovie($_GET['movid']);
+
+for($i=0;$i<sizeof($xml->movies->movie->images->image);$i++) {
+foreach($xml->movies->movie->images->image[$i]->attributes() as $a => $b) {
+if ($a=="type" && $b=="backdrop" && $xml->movies->movie->images->image[$i]['size']=="original") {
+$ll++;
+if($ll==1) $bg=$xml->movies->movie->images->image[$i]['url'];
+}
+}
+}
+if (sizeof($xml->movies->movie->images->image)>0) {
+$ll=0;
+for($k=0;$k<sizeof($xml->movies->movie->images->image);$k++) {
+foreach($xml->movies->movie->images->image[$k]->attributes() as $a => $b) {
+if ($a=="type" && $b=="poster" && $xml->movies->movie->images->image[$k]['size']=="cover") {
+$ll++;
+if($ll==1) $posterimg2=$xml->movies->movie->images->image[$k]['url'];
+}
+}
+}
+}
+else $posterimg2="/images/images/NoPhotoAvailable.jpg";
+if ($posterimg2=="") $posterimg2="/images/images/NoPhotoAvailable.jpg";
+$c=0;
+$d=0;
+for($j=0;$j<sizeof($xml->movies->movie[0]->cast->person);$j++) {
+foreach($xml->movies->movie[0]->cast->person[$j]->attributes() as $a => $b) {
+if ($a=="job" && $b=="Director") {
+$dirname[$c]=$xml->movies->movie[0]->cast->person[$j]['name'];
+$dirthumb[$c]=$xml->movies->movie[0]->cast->person[$j]['thumb'];
+$dirpid[$c]=$xml->movies->movie[0]->cast->person[$j]['id'];
+$c++;
+}
+
+if ($a=="job" && $b=="Actor") {
+$actorname[$d]=$xml->movies->movie[0]->cast->person[$j]['name'];
+$actorthumb[$d]=$xml->movies->movie[0]->cast->person[$j]['thumb'];
+$actorrole[$d]=$xml->movies->movie[0]->cast->person[$j]['character'];
+$actorpid[$d]=$xml->movies->movie[0]->cast->person[$j]['id'];
+$d++;
+}
+}
+}
+
+$postform="<form method=post action=".$_SERVER['PHP_SELF']."?movid=".$_GET[movid]."><input type=hidden name=movid value=".$_GET['movid']."><input type=submit name=submit value=\"Confirm Submit\"></p>";
+$moviename = $xml->movies->movie->name;
+$imdbid = $xml->movies->movie->imdb_id;
+$reldate = $xml->movies->movie->released;
+$tmdbid = $xml->movies->movie->id;
+$tmdburl = $xml->movies->movie->url;
+$rating = $xml->movies->movie->rating;
+$overview = $xml->movies->movie->overview;
+if (!empty($xml->movies->movie->trailer)) {
+$trailer = $xml->movies->movie->trailer;
+}
+$genre = $xml->movies->movie->categories->category[0][name];
+$studio=$xml->movies->movie->studios->studio[0][name];
+
+
+
+if ($bg) { echo '<body style="background:#FFFFFF url('.$bg.') repeat-y fixed top center; font-family: Verdana, Tahoma, Arial, sans-serif; width: 100%; font-size: 12px; padding: 0; margin: 0; color: #FFF5EE; line-height: 20px;" >';
+}
+else {
+echo "<body>";
+}
+?>
+<div id="wrap">
+<div id="headerbg">
+<div id="header">
+<h1><a href="index.phtml">Movie Collection</a></h1>
+
+</div>
+</div>
+<div id="menu">
+<ul>
+    <li><a href="index.phtml">Home</a></li>
+	<li><a href="logout.phtml">Logout</a></li>
+<!-- Add Menu Items here if needed -->
+</ul>
+</div>
+
+<div id="content">
+<!-- Left Navigation -->
+<div id="left">
+<h2>Categories: </h2>
+<div class="box">
+<ul>
+<li><a href="movie.phtml">Your Collection</a></li>  
+<li><a href="addmovie.phtml">Add a movie</a></li>  
+</ul>
+</div>
+</div>
+
+<div id="right">
+<?php
+$db = new Database;
+if(isset($_POST[submit])) {
+$sql="SELECT movieid FROM movf WHERE movieid=".$_POST[movid]."";
+$res=$db->query($sql);
+if($db->numrows($res)==0) {
+echo "<h2>Adding Movie</h2>";
+
+$sql= "INSERT movf (movieid, moviename, releasedate, plot, trailer, rating, genre, imdb_id, studio, poster, background) VALUES ('".addslashes($tmdbid)."', '".addslashes($moviename)."', '".$reldate."', '".addslashes($overview)."', '".$trailer."', '".$rating."', '".addslashes($genre)."', '".$imdbid."', '".addslashes($studio)."', '".$posterimg2."', '".$bg."' )";
+$res=$db->query($sql);
+if ($res===TRUE) {
+$date=date( 'Y-m-d H:i:s' );
+
+$sql= "INSERT ".$_SESSION[uname]."movies (movieid, favstatus, dateadded, loanstatus) VALUES ('".$tmdbid."', '0', '".$date."', 'In Collection')";
+$res=$db->query($sql);
+for($i=0; $i<count($actorname); $i++) {
+if($actorname[$i]!="") {
+$sql="INSERT moviecrew (personid, name, moviename, movieid, job, thumbimg, actorrole) VALUES ('".$actorpid[$i]."', '".addslashes($actorname[$i])."', '".addslashes($moviename)."', '".$tmdbid."', 'Actor', '".addslashes($actorthumb[$i])."', '".addslashes($actorrole[$i])."')";
+$res=$db->query($sql);
+
+}
+}
+
+for($i=0; $i<count($dirname); $i++) {
+if($dirname[$i]!="") {
+$sql="INSERT moviecrew (personid, name, moviename, movieid, job, thumbimg, actorrole) VALUES ('".$dirpid[$i]."', '".addslashes($dirname[$i])."', '".addslashes($moviename)."', '".$tmdbid."', 'Director', '".addslashes($dirthumb[$i])."', '')";
+$res=$db->query($sql);
+}
+}
+
+echo "<span id=activmsg>Your movie was added successfully!</span>";
+exit();
+}
+else echo "ERROR IN PROCESSING REQUEST.";
+}
+else echo "<br /><span id=activmsg>This movie already exists in our database. Please click on Add a Movie and try your search again.</span>";
+exit();
+}
+else {
+echo "<h2>Search Results</h2>";
+}
+
+
+
+
+
+$postform="<form method=post action=".$_SERVER['PHP_SELF']."?movid=".$_GET[movid]."><input type=hidden name=movid value=".$_GET['movid']."><input type=submit name=submit value=\"Confirm Submit\"></p>";
+$moviename = $xml->movies->movie->name;
+$imdbid = $xml->movies->movie->imdb_id;
+$reldate = $xml->movies->movie->released;
+$tmdbid = $xml->movies->movie->id;
+$tmdburl = $xml->movies->movie->url;
+$rating = $xml->movies->movie->rating;
+$overview = $xml->movies->movie->overview;
+if (!empty($xml->movies->movie->trailer)) {
+$trailer = $xml->movies->movie->trailer;
+}
+$genre = $xml->movies->movie->categories->category[0][name];
+
+
+for($i=0;$i<sizeof($xml->movies->movie);$i++) {
+foreach($xml->movies->movie[$i]->name as $mov) {
+echo "<p><strong>" . $mov . "</strong></p>".$postform."";
+}
+}
+echo "<br />";
+$m=0;
+foreach($xml->movies->movie as $movie) {
+?>
+<div id="enclosmovf">
+<?php
+echo "<h2>";
+echo $movie->name;
+echo "</h2>";
+
+
+
+
+
+
+echo "<div id=\"rightimg\"><img src=\"" . $posterimg2 . "\"alt=\"" . $movie->name . "\" /></div>";
+?>
+<div id="movoutcontainerf">
+<div id="movdetailsf">
+<?php
+if (!empty($movie->imdb_id)) {
+echo "<p class=\"movdetailsf\"><a href=http://www.imdb.com/title/" . $movie->imdb_id . " target=\"_blank\"> IMDB PAGE </a>";
+}
+echo "<br />";
+echo "<p class=\"movdetailsf\"><a href=" . $movie->url . " target=\"_blank\"> tmDB PAGE </a>";
+echo "<br />";
+if (!empty($trailer)) {
+echo "<a href=" . $trailer . " target=\"_blank\"> Trailer </a>";
+echo "<br />";
+}
+echo "<br />";
+if (!empty($movie->released)) echo "Release Date: " . $movie->released . "";
+else echo "Release Date: Not Available";
+echo "<br />";
+echo "Rating: " . $movie->rating . "";
+echo "<br />";
+for($i=0; $i<count($dirname); $i++) {
+if($dirname[$i]!="") {
+if($dirthumb[$i]!="") {
+echo "<img height=34 width=23 src=\"".$dirthumb[$i]."\"\>";
+}
+echo "Director: <strong>" .$dirname[$i] ."</strong><br />";
+
+}
+}
+
+echo "<br /><strong>Plot overview:</strong> <br />";
+if (!empty($movie->overview)){
+echo $movie->overview ."<br /><br />";
+}
+else echo "Not Available <br /><br />";
+
+for($i=0; $i<count($actorname); $i++) {
+if($actorthumb[$i]!="") {
+echo "<img height=34 width=23 src=\"".$actorthumb[$i]."\"\>";
+}
+else echo "<img height=34 width=23 src=\"/images/images/NoPhotoAvailable.jpg\"\>";
+echo "   Actor: " .$actorname[$i] ." as " .$actorrole[$i]." <br /><br />";
+}
+
+
+echo "<br />";
+/*  //DEBUGGING XML
+echo "<p><pre>";
+var_dump($xml);
+echo "</pre></p>";
+*/
+?>
+</div>
+</div>
+</div>
+<?php
+
+}
+
+
+
+
+?>
+<div id="footer">
+<br />
+<?php
+include 'footer.phtml';
+?>
+
+</div> <!--closing footer -->
+</div> <!-- closing right -->
+
+
+</div> <!-- closing content -->
+
+
+
+</div> <!-- closing wrap -->
+
+</body>
+
+</html>

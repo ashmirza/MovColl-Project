@@ -1,0 +1,289 @@
+* {
+padding: 0;
+margin: 0;
+} 
+
+body {
+background: #FFFFFF url(http://images.themoviedb.org/backdrops/69965/avatar-2.jpg) top;
+background-repeat:no-repeat;
+background-attachment:scroll;
+font-family: Verdana, Tahoma, Arial, sans-serif;
+width: 100%;
+font-size: 20px;
+padding: 0;
+margin: 0;
+color: #FFF5EE;
+line-height: 20px;
+}
+
+
+
+img { border: none; }
+a { text-decoration: none; color: #3090F0; }
+a:hover { color: #FFF; }
+h3 { border-bottom: 1px dotted #ccc; color: #F0A848; padding: 10px 0 2px 0; }
+h3 a { color: #3090F0; }
+h3 a:hover { color: #F0A848; }
+h4 { color: #F0A848; }
+label { color: #F0A848; }
+
+#wrap {
+margin: 0 auto;
+margin-bottom:20px;
+width: 980px;
+}
+
+#headerbg {
+background: url(/phtml/rgba.php?name=black&a=40) repeat;
+background: rgba(0, 0, 0, 0.4);
+border-bottom:4px solid white;
+/* for webkit and css3 standards based browsers "chrome" */
+border-top-left-radius: 1.5em;
+border-top-right-radius: 1.5em;
+/* for Mozilla */
+-moz-border-radius-topleft: 18px;
+-moz-border-radius-topright: 18px;
+/* for SAFARI */
+-webkit-border-top-right-radius: 18px;
+-webkit-border-top-left-radius: 18px;
+height: 60px;
+margin-top:10px;
+}
+
+
+#header h1 { float:right; font-family: Georgia; padding: 25px 25px 10px 30px; font-size: 50px; font-weight: 200; letter-spacing: -1px;  opacity: 1.0; }
+#header h1 a { color: #FFFFFF; }
+#header h1 a:hover { color: #FFF8C6; }
+#header h2 { float:left; padding: 0px 0px 0px 30px; font-size: 19px; color: #FFF8C6; font-weight: 100; }
+
+#menu {
+background: url(/phtml/rgba.php?name=black&a=70) repeat;
+background: rgba(0, 0, 0, 0.7);
+border-bottom-left-radius: .6em;
+border-bottom-right-radius: .6em;
+-moz-border-radius-bottomleft: 7px;
+-moz-border-radius-bottomright: 7px;
+-webkit-border-bottom-left-radius: 7px;
+-webkit-border-bottom-right-radius: 7px;
+height: 40px;
+line-height: 40px;
+padding-left: 20px;
+margin-bottom:15px;
+}
+
+#menu li {
+float:left;
+list-style-type:none;
+}
+#menu li a {
+padding:0 10px;
+text-decoration:none;
+color: #fff;
+letter-spacing:-1px;
+font-weight: 100;
+font-size: 17px;
+}
+#menu li a:hover {
+color: #fff;
+text-decoration: underline; 
+}
+
+#content { 
+padding: 10px;
+margin-bottom:10px;
+}
+
+#left {
+margin-bottom:5px;
+/* for IE only stupid IE */ 
+background: url(/phtml/rgba.php?name=black&a=80) repeat;
+/* for Real browsers that don't suck */
+background: rgba(0, 0, 0, 0.8);
+float: left;
+width: 200px;
+border-radius: .6em;
+-moz-border-radius: 7px;
+-webkit-border-radius: 7px;
+}
+
+#left li { list-style-type: none; padding-left: 10px; }
+
+#left h2 {
+padding: 5px 5px 5px 15px; 
+font: bold 18px Verdana, 'Trebuchet MS', Sans-serif;
+color:goldenrod;
+background: background transparent;
+border-bottom:gray 2px solid;
+}
+
+#left .box {
+margin: 0 0 10px 10px;	
+padding: 5px 0 10px 0;
+font: 14px Verdana, 'Trebuchet MS', Sans-serif;
+}
+
+
+#right { 
+margin-bottom:5px;
+float: right;
+width: 740px;
+margin-right: 10px;
+/* for IE only stupid IE */ 
+background: url(/phtml/rgba.php?name=black&a=80) repeat;
+/* for Real browsers that don't suck */
+background: rgba(0, 0, 0, 0.8);
+border-radius: .6em;
+-moz-border-radius: 7px;
+-webkit-border-radius: 7px;
+font: 14px Verdana, 'Trebuchet MS', Sans-serif;
+}
+
+#right img {
+margin:5px 5px 10px 20px; 
+border:1.5px groove white;
+padding: 5px;
+float:left;
+height:278px;
+width:185px;
+}
+
+
+
+#right h2 {
+margin-bottom:10px;
+padding: 5px 5px 5px 15px; 
+font: bold 18px Verdana, 'Trebuchet MS', Sans-serif;
+color:goldenrod;
+background: background transparent;
+border-bottom: gray 2px solid;
+}
+
+#right p {
+padding-left: 20px;
+padding-right: 20px;
+font: 14px Verdana, 'Trebuchet MS', Sans-serif;
+}
+
+
+#movdetails {
+width:475px;
+float:right;
+border-top: white 1px solid;
+border-bottom: white 1px solid;
+padding-top:10px;
+margin: 5px 20px 10px 5px;
+height:278px;
+}
+
+
+.contentleft p.searchr {
+color: #463E3F;
+float: center;
+width : 500px;
+border-color:#717D7D;
+border-style:solid;
+border-width:1.3px;
+margin-left:5px;
+margin-bottom:5px;
+padding:7px;
+}
+
+.contentleft p.searchrh {
+color: #FAF8CC;
+float: center;
+width : 500px;
+background-color:#717D7D;
+margin-left:5px;
+padding-left:7px;
+padding-right:7px;
+border-color:#717D7D;
+border-style:solid;
+border-width:1.3px;
+}
+
+div.pagination {
+padding: 3px;
+margin: 3px;
+}
+
+div.pagination a {
+padding: 2px 5px 2px 5px;
+margin: 2px;
+border: 1px solid #AAAADD;	
+text-decoration: none;
+color: #303030;
+}
+
+div.pagination a:hover, div.pagination a:active {
+border: 1px solid #303030;
+color: #000;
+}
+
+div.pagination span.current {
+padding: 2px 5px 2px 5px;
+margin: 2px;
+border: 1px solid #303030;
+font-weight: bold;
+background-color: #303030;
+color: #FFFFFF;
+}
+
+div.pagination span.disabled {
+padding: 2px 5px 2px 5px;
+margin: 2px;
+border: 1px solid #EEE;
+color: #DDD;
+}
+
+.contentleftbox ul {
+margin: 0 0 10px 0;	
+padding: 0 10px 10px 20px;
+text-align: justify;
+}
+
+.contentright {
+float: right;
+width: 180px;
+}
+
+.contentrightbox {
+border-right: 1px solid #ccc; 
+border-left: 1px solid #ccc; 
+border-bottom: 1px solid #ccc; 
+margin: 0 0 10px 0;	
+padding: 10px;
+}
+.contentrightbox h4{
+text-align: left;
+border-bottom: 1px solid #ccc; 
+}
+.contentrightbox label{
+text-align: left;
+border-bottom: 1px solid #ccc; 
+font: bold 12px Verdana;
+}
+.contentrightboxoption {
+border-right: 1px solid #ccc; 
+border-left: 1px solid #ccc; 
+border-bottom: 1px solid #ccc;
+border-top: 1px solid #ccc;
+}
+#footer {
+/* for IE only stupid IE */ 
+background: url(/phtml/rgba.php?name=black&a=80) repeat;
+/* for Real browsers that don't suck */
+background: rgba(0, 0, 0, 0.8);
+height: 40px;
+width:960px;
+line-height: 40px;
+color: #fff;
+position:absolute;
+bottom:20px;
+text-align: center;
+}
+#footer a { color: #fff; }
+#footer a:hover { color: #333; }
+
+
+
+

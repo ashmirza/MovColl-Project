@@ -1,0 +1,70 @@
+<?php
+
+/**
+ * INT525 A
+ * Ashraf Mirza
+ * Andrew Sicard-Woodall
+ */
+
+class Database {
+    //private members for use in class only.
+    private $host = "localhost";
+    private $username = "web"; 
+    private $passwd = "nouser";
+    private $db = "movies";
+    
+    private $dbc;
+    private $dbs;
+    //public array of mysql errors
+    public $errorStack = array();
+    
+    //construct function to connect to DB when class is called.
+    public function __construct(){
+        $this->connect_db();
+    }
+    //function to connect to DB
+    public function connect_db() {
+        if(!$this->dbc = mysqli_connect($this->host, $this->username, $this->passwd, $this->db)) {
+            $this->errorStack[] = "MySQL Connection error ".mysqli_error();
+        }
+    }
+    
+    //creates a function to close mysql db conn
+    function close_conn() {
+        if(isset($this->dbc)) {
+            $this->dbc->close();
+            unset($this->dbc);
+        }
+    }
+    
+    //Query function
+    function query($sql){
+        $res = mysqli_query($this->dbc, $sql);
+        $this->conf_query($res);
+        return $res;
+    }
+    
+    //check for query error
+    function conf_query($res) {
+        if(!$res) {
+            die(mysqli_error($this->dbc));
+        }
+    }
+    
+    //Fetch array of values for Select statement
+    function fetch_array($res) {
+        return mysqli_fetch_array($res);
+    }
+    
+    //count number of rows for last query.
+    function numrows($rows) {
+        return mysqli_num_rows($rows);
+    }
+    
+    //count # of rows affected by last update / insert
+    function rowsaffected() {
+        return mysqli_affected_rows($this->dbc);
+    }
+}
+
+?>

@@ -1,0 +1,100 @@
+<?php
+session_start();
+
+//logout page
+
+	
+
+  $mysqli = mysqli_connect("localhost", "web", "nouser", "movies");
+        if(mysqli_connect_errno()){
+            echo mysqli_connect_error();
+        }
+session_destroy();			
+
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<?php
+/* Name: Ashraf Mirza
+  Student #: 033 306 051
+  class: PHP701 A
+  Final Project - Movie Collection
+*/
+?>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Home - Movie Collection</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Language" content="English" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="/css/tmdb.css" media="screen" />
+</head>
+<?php
+$sql = "SELECT background FROM movf ORDER BY RAND() LIMIT 1";
+$res= mysqli_query($mysqli,$sql);
+if($res)
+{
+while($row=$res->fetch_object()) {
+$bg=$row->background;
+}
+}
+
+if ($bg) { echo '<body style="background:#FFFFFF url('.$bg.') repeat-y fixed top center; font-family: Verdana, Tahoma, Arial, sans-serif; width: 100%; font-size: 12px; padding: 0; margin: 0; color: #FFF5EE; line-height: 20px;" >';
+}
+else {
+echo "<body>";
+}
+?>
+<div id="wrap">
+<div id="headerbg">
+<div id="header">
+<h1><a href="index.phtml">Movie Collection</a></h1>
+
+</div>
+</div>
+<div id="menu">
+<ul>
+    <li><a href="index.phtml">Home</a></li>
+	<li><a href="register.phtml">Register</a></li>
+<!-- Add Menu Items here if needed -->
+</ul>
+</div>
+
+<div id="content">
+<!-- Left Navigation -->
+<div id="left">
+<h2>Categories: </h2>
+<div class="box">
+<ul>
+<li><a href="#">Testing</a></li>  
+</ul>
+</div>
+</div>
+
+	
+<div id="right">
+
+
+<h2>Logout Successful</h2>
+<span id=activmsg>You were logged out successfully, please click on Home to login again.</span>
+
+<div id="footer">		
+<br />	
+ <?php
+include 'footer.phtml';
+
+?>
+
+</div> <!--closing footer -->
+</div> <!-- closing right -->
+
+
+</div> <!-- closing content -->
+
+
+
+</div> <!-- closing wrap -->
+
+</body>
+
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<?php
+/* Name: Ashraf Mirza & Andrew Sicard-Woodall
+  class: INT525A
+  Final Project - Movie Collection
+*/
+?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Movie Collection</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Language" content="English" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="/css/tmdb.css" media="screen" />
+</head>
+<?php
+$request_url = "http://api.themoviedb.org/2.1/Movie.search/en/xml/df57507099382b3c4d9e392444e1c4c7/";
+$request_url.= $_GET['keyword'];
+$xml = simplexml_load_file($request_url) or die("feed not loading");
+for($i=0;$i<sizeof($xml->movies->movie[0]->images->image);$i++) {
+foreach($xml->movies->movie[0]->images->image[$i]->attributes() as $a => $b) {
+if ($a=="type" && $b=="backdrop" && $xml->movies->movie[0]->images->image[$i]['size']=="original") {
+$bg=$xml->movies->movie[0]->images->image[$i]['url'];
+}
+}
+}
+
+if ($bg) { echo '<body style="background:#FFFFFF url('.$bg.') repeat-y fixed top center; font-family: Verdana, Tahoma, Arial, sans-serif; width: 100%; font-size: 12px; padding: 0; margin: 0; color: #FFF5EE; line-height: 20px;" >';
+}
+else {
+echo "<body>";
+}
+?>
+<div id="wrap">
+<div id="headerbg">
+<div id="header">
+<h1><a href="/movie.html">Movie Collection</a></h1>
+
+</div>
+</div>
+<div id="menu">
+<ul>
+    <li><a href="/movie.html">Home</a></li>
+	<li><a href="#">Login</a></li>
+	<li><a href="#">Logout</a></li>
+<!-- Add Menu Items here if needed -->
+</ul>
+</div>
+
+<div id="content">
+<!-- Left Navigation -->
+<div id="left">
+<h2>Categories: </h2>
+<div class="box">
+<ul>
+<li><a href="#">Testing</a></li>  
+</ul>
+</div>
+</div>
+
+<div id="right">
+<h2>Search Results</h2>
+<?php
+$request_url = "http://api.themoviedb.org/2.1/Movie.search/en/xml/df57507099382b3c4d9e392444e1c4c7/";
+$request_url.= $_GET['keyword'];
+$xml = simplexml_load_file($request_url) or die("feed not loading");
+
+
+
+
+
+$moviename = $xml->movies->movie->name;
+$imdbid = $xml->movies->movie->imdb_id;
+$reldate = $xml->movies->movie->released;
+$tmdbid = $xml->movies->movie->id;
+$rating = $xml->movies->movie->rating;
+$overview = $xml->movies->movie->overview;
+
+
+
+for($i=0;$i<sizeof($xml->movies->movie);$i++) {
+foreach($xml->movies->movie[$i]->name as $mov) {
+echo "<p><strong>" . $mov . "</strong></p>";
+}
+}
+echo "<br />";
+$m=0;
+foreach($xml->movies->movie as $movie) {
+?>
+<div id="enclosmov">
+<?php
+echo "<h2>";
+echo $movie->name;
+echo "</h2>";
+$request_url2 = "http://api.themoviedb.org/2.1/Movie.getInfo/en/xml/df57507099382b3c4d9e392444e1c4c7/";
+$request_url2.= $movie->id;
+$xml2 = simplexml_load_file($request_url2) or die("feed not loading");
+if (!empty($xml2->movies->movie->trailer)) {
+$trailer = $xml2->movies->movie->trailer;
+}
+
+for($j=0;$j<sizeof($xml2->movies->movie[0]->cast->person);$j++) {
+foreach($xml2->movies->movie[0]->cast->person[$j]->attributes() as $a => $b) {
+if ($a=="job" && $b=="Director") {
+$dirname=$xml2->movies->movie[0]->cast->person[$j]['name'];
+$dirthumb=$xml2->movies->movie[0]->cast->person[$j]['thumb'];
+}
+}
+}
+if (sizeof($movie->images->image)>0) {
+for($k=0;$k<sizeof($movie->images->image);$k++) {
+foreach($movie->images->image[$k]->attributes() as $a => $b) {
+if ($a=="type" && $b=="poster" && $movie->images->image[$k]['size']=="cover") {
+$posterimg2=$movie->images->image[$k]['url'];
+}
+}
+}
+}
+else $posterimg2="/images/images/NoPhotoAvailable.jpg";
+
+echo "<div id=\"rightimg\"><img src=\"" . $posterimg2 . "\"alt=\"" . $movie->name . "\" /></div>";
+?>
+<div id="movoutcontainer">
+<div id="movdetails">
+<?php
+if (!empty($movie->imdb_id)) {
+echo "<p class=\"movdetails\"><a href=http://www.imdb.com/title/" . $movie->imdb_id . " target=\"_blank\"> IMDB PAGE </a>";
+}
+echo "<br />";
+echo "<p class=\"movdetails\"><a href=" . $movie->url . " target=\"_blank\"> tmDB PAGE </a>";
+echo "<br />";
+if (!empty($trailer)) {
+echo "<a href=" . $trailer . " target=\"_blank\"> Trailer </a>";
+echo "<br />";
+}
+echo "<br />";
+if (!empty($movie->released)) echo "Release Date: " . $movie->released . "";
+else echo "Release Date: Not Available";
+echo "<br />";
+echo "Rating: " . $movie->rating . "";
+echo "<br />";
+if ($dirname=="") $dirname="Not Available";
+echo "Director: " . $dirname . "<br /><br />";
+echo "<strong>Plot overview:</strong> <br />";
+if (!empty($movie->overview)){
+echo $movie->overview;
+}
+else echo "Not Available";
+echo "<br />";
+?>
+</div>
+</div>
+</div>
+<?php
+$dirname="Not Available";
+$dirthumb="Not Available";
+$trailer="";
+}
+
+/*
+for($i=0;$i<sizeof($xml->movies->movie[0]->images->image);$i++) {
+foreach($xml->movies->movie[0]->images->image[$i]->attributes() as $a => $b) {
+echo "<p><strong>Image attribs:</strong> <br />" . $a . "=" . $b . "";
+echo "<br />";
+}
+
+echo "<br />";
+echo "</p>";
+
+}
+
+*/
+?>
+<!--<h2>XML being processed code testing</h2>-->
+<?php
+
+echo "<p><pre>";
+var_dump($xml);
+echo "</pre></p>";
+
+?>
+<!--<h2>Simple XML Movie getinfo usage</h2>-->
+<?php
+
+$request_url = "http://api.themoviedb.org/2.1/Movie.getInfo/en/xml/df57507099382b3c4d9e392444e1c4c7/16869";
+$xml = simplexml_load_file($request_url) or die("feed not loading");
+echo "<pre>";
+var_dump($xml2);
+echo "</pre>";
+echo $file;
+
+?>
+<div id="footer">
+
+&copy; Copyright by <a href="#">Ashraf Mirza</a> | Design by <strong>Ashraf Mirza</strong> | Number of hits = <?php
+
+$count_my_page = ("hitcounter.txt");
+$hits = file($count_my_page);
+$hits[0] ++;
+$fp = fopen($count_my_page , "w");
+fputs($fp , "$hits[0]");
+fclose($fp);
+echo $hits[0];
+
+?>
+
+</div> <!--closing footer -->
+</div> <!-- closing right -->
+
+
+</div> <!-- closing content -->
+
+
+
+</div> <!-- closing wrap -->
+
+</body>
+
+</html>

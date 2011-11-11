@@ -1,0 +1,13 @@
+<?php
+//footer include
+echo '&copy; Copyright by <strong><a href="http://twitter.com/ashrafmirza">Ashraf Mirza</a></strong> | All Images provided by <a href="http://themoviedb.org">tmDB</a> and belong to their original copyright holders. <br /> Design by <strong><a href="http://twitter.com/ashrafmirza">Ashraf Mirza</a></strong> | Total Number of hits on website = ';
+$count_my_page = ("hitcounter.txt");
+$hits = file($count_my_page);
+$hits[0] ++;
+$fp = fopen($count_my_page , "w");
+fputs($fp , "$hits[0]");
+fclose($fp);
+echo $hits[0];
+$db->close_conn();
+
+?>

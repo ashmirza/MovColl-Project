@@ -1,0 +1,204 @@
+<?php
+session_start();
+//index page
+
+/* MySQL connection */
+include 'dbclass.phtml';
+
+$db = new Database;
+$errorcount=0;
+if(isset($_POST['submit']) && ($errorcount=="0")) {
+
+	$check="SELECT userid FROM there WHERE username='".$_POST['username']."'";
+	$res= $db->query($check);
+		if ($res) 
+		{
+			$nofrows = $db->numrows($res);
+		}
+		if($nofrows=="0") 
+		{
+			$usernameerror="No user like that exists please register by clicking Register above.<br />";
+			$errorcount++;
+		}
+		else
+		{
+			$check="SELECT userid FROM there WHERE username='".$_POST['username']."' AND passwd='".md5($_POST['password'])."'";
+			$resp= $db->query($check);
+		}
+		if ($resp)
+		{
+			$nofrowsp = $db->numrows($resp);
+		}
+		if($nofrowsp=="0")
+		{
+			$passwderror="The username and password do not match, please try again OR <a href=\"passreset.phtml\">Click here</a> to reset your password.";
+			$errorcount++;
+		}
+		else
+		{
+			$scheck="SELECT userid FROM there WHERE username='".$_POST['username']."' AND passwd='".md5($_POST['password'])."' and activate_status='0'";
+			$ress= $db->query($scheck);
+		}
+		if($ress)
+		{
+			$nofrowss = $db->numrows($ress);
+		}
+		if($nofrowss=="1")
+		{
+			$passwderror="You account has not been activated yet, please check you email and click on the activation link. If you have not received an activation link yet please <a href=\"passreset.phtml\">click here</a> and fill out your information to send the email again.";
+			$errorcount++;
+		}
+		else
+		{
+			$fcheck="SELECT * FROM there WHERE username='".$_POST['username']."' AND passwd='".md5($_POST['password'])."' AND activate_status='1'";
+			$resf= $db->query($fcheck);
+		}
+		if($resf)
+				{
+					$nofrowsf = $db->numrows($resf);
+				}
+			if($nofrowsf=="1")
+				{
+					$redirect="yes";
+					while($row=$resf->fetch_object()) {
+					$_SESSION[uname]=$row->username;
+					$_SESSION[userid]=$row->userid;
+					$_SESSION[fname]=$row->first_name;
+					$_SESSION[lname]=$row->last_name;
+					$_SESSION[email]=$row->email;
+					}
+					$redirectmsg="Hello ".$_SESSION[fname]." ". $_SESSION[lname].", You'll be redirected in about 5 secs. If not, click <a href=\"movie.phtml\">here</a>.";
+					
+					$msg="<span id=\"activmsg\">".$redirectmsg."</span>";
+				}
+			elseif($nofrowsf=="0")
+				{
+					$msg= "<span id=\"activmsg\">There was an error, please try again later.</span>";
+					#$errorcount++;
+				}
+		}
+
+if($redirect=="yes")
+{
+  header( "refresh:5;url=movie.phtml" );
+  $redirectmsg="Hello ".$_SESSION[fname]." ". $_SESSION[lname].", You'll be redirected in about 5 secs. If not, click <a href=\"movie.phtml\">here</a>.";
+}
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<?php
+/* Name: Ashraf Mirza
+  Student #: 033 306 051
+  class: PHP701 A
+  Final Project - Movie Collection
+*/
+?>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Home - Movie Collection</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Language" content="English" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="/css/tmdb.css" media="screen" />
+</head>
+<?php
+$sql = "SELECT background FROM movf ORDER BY RAND() LIMIT 1";
+$res= $db->query($sql);
+if($res)
+{
+while($row=$res->fetch_object()) {
+$bg=$row->background;
+}
+}
+
+if ($bg) { echo '<body style="background:#FFFFFF url('.$bg.') repeat-y fixed top center; font-family: Verdana, Tahoma, Arial, sans-serif; width: 100%; font-size: 12px; padding: 0; margin: 0; color: #FFF5EE; line-height: 20px;" >';
+}
+else {
+echo "<body>";
+}
+?>
+<div id="wrap">
+<div id="headerbg">
+<div id="header">
+<h1><a href="index.phtml">Movie Collection</a></h1>
+
+</div>
+</div>
+<div id="menu">
+<ul>
+    <li><a href="index.phtml">Home</a></li>
+	<li><a href="register.phtml">Register</a></li>
+<!-- Add Menu Items here if needed -->
+</ul>
+</div>
+
+<div id="content">
+<!-- Left Navigation -->
+<div id="left">
+<h2>Categories: </h2>
+<div class="box">
+<ul>
+<li><a href="#">Testing</a></li>  
+</ul>
+</div>
+</div>
+
+	
+<div id="right">
+<?php
+if($redirect=="yes") {
+echo "<h2>Login Successful</h2>";
+echo "<span id=\"activmsg\">".$redirectmsg."</span>";
+}
+else 
+{
+echo "<h2>Login</h2>";
+
+
+
+if(!isset($_POST['submit']) || ($errorcount>0)) {
+?>
+<form id="form" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+	<fieldset>
+		<legend>Login Here</legend>
+			
+			<span id="errormsg"> * All Fields are required </span>
+			<br /> <br /> <br />
+			<label for="username">Username:</label>
+			<input type="text" name="username" id="username" value="<?php $_POST[username] ?>"/> <?php "<span id=\"errormsg\">" . $usernameerror ."</span>" ?>
+			<br />
+			
+			<label for="password">Password:</label>
+			<input type="password" name="password" id="password" value="<?php $_POST[password] ?>"/> <?php "<span id=\"errormsg\">" . $passwderror ."</span>" ?>
+			<br />
+			
+			<label for="submit"></label>
+			<input type="submit" name="submit" value="Submit" class="button">
+	</fieldset>
+</form>
+<?php
+}
+}
+
+?>
+
+<div id="footer">		
+<br />	
+ <?php
+include 'footer.phtml';
+
+?>
+
+</div> <!--closing footer -->
+</div> <!-- closing right -->
+
+
+</div> <!-- closing content -->
+
+
+
+</div> <!-- closing wrap -->
+
+</body>
+
+</html>

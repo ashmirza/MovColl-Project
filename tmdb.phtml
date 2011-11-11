@@ -1,0 +1,180 @@
+<?php
+session_start();
+//TMDB Search page
+include 'tmdbclass.phtml';
+
+if(!isset($_SESSION[userid])) {
+   header( 'Location: index.phtml' ) ;
+}
+if(!isset($_GET[keyword])) {
+   header( 'Location: addmovie.phtml' ) ;
+}
+/* MySQL connection */
+include 'dbclass.phtml';
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<?php
+/* Name: Ashraf Mirza
+  Student #: 033 306 051
+  class: PHP701 A
+  Final Project - Movie Collection
+*/
+
+
+?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+<title>Movie Collection</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Language" content="English" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="/css/tmdb.css" media="screen" />
+</head>
+<?php
+
+$tmdb = new tmdb;
+$xml = $tmdb->Moviesearch($_GET['keyword']);
+$bg = $tmdb->getbg($xml);
+
+if ($bg) { echo '<body style="background:#FFFFFF url('.$bg.') repeat-y fixed top center; font-family: Verdana, Tahoma, Arial, sans-serif; width: 100%; font-size: 12px; padding: 0; margin: 0; color: #FFF5EE; line-height: 20px;" >';
+}
+else {
+echo "<body>";
+}
+?>
+<div id="wrap">
+<div id="headerbg">
+<div id="header">
+<h1><a href="index.phtml">Movie Collection</a></h1>
+
+</div>
+</div>
+<div id="menu">
+<ul>
+    <li><a href="index.phtml">Home</a></li>
+	<li><a href="logout.phtml">Logout</a></li>
+<!-- Add Menu Items here if needed -->
+</ul>
+</div>
+
+<div id="content">
+<!-- Left Navigation -->
+<div id="left">
+<h2>Categories: </h2>
+<div class="box">
+<ul>
+<li><a href="movie.phtml">Your Collection</a></li>  
+<li><a href="addmovie.phtml">Add a movie</a></li>  
+</ul>
+</div>
+</div>
+
+<div id="right">
+<h2>Search Results</h2>
+<?php
+
+$xml = $tmdb->Moviesearch($_GET['keyword']);
+
+for($i=0;$i<sizeof($xml->movies->movie);$i++) {
+foreach($xml->movies->movie[$i]->name as $mov) {
+echo "<p><strong><a href=\"addfinal.phtml?movid=".$xml->movies->movie[$i]->id."\">" . $mov . "</a></strong></p>";
+}
+}
+echo "<br />";
+$m=0;
+foreach($xml->movies->movie as $movie) {
+?>
+<div id="enclosmov">
+<?php
+echo "<h2>";
+echo $movie->name;
+echo "</h2>";
+
+$xml2 = $tmdb->getMovie($movie->id);
+if (!empty($xml2->movies->movie->trailer)) {
+$trailer = $xml2->movies->movie->trailer;
+}
+
+for($j=0;$j<sizeof($xml2->movies->movie[0]->cast->person);$j++) {
+foreach($xml2->movies->movie[0]->cast->person[$j]->attributes() as $a => $b) {
+if ($a=="job" && $b=="Director") {
+$dirname=$xml2->movies->movie[0]->cast->person[$j]['name'];
+$dirthumb=$xml2->movies->movie[0]->cast->person[$j]['thumb'];
+}
+}
+}
+if (sizeof($movie->images->image)>0) {
+for($k=0;$k<sizeof($movie->images->image);$k++) {
+foreach($movie->images->image[$k]->attributes() as $a => $b) {
+if ($a=="type" && $b=="poster" && $movie->images->image[$k]['size']=="cover") {
+$posterimg2=$movie->images->image[$k]['url'];
+}
+}
+}
+}
+else $posterimg2="/images/images/NoPhotoAvailable.jpg";
+if ($posterimg2=="") $posterimg2="/images/images/NoPhotoAvailable.jpg";
+
+echo "<div id=\"rightimg\"><a href=\"addfinal.phtml?movid=".$movie->id."\"><img src=\"" . $posterimg2 . "\"alt=\"" . $movie->name . "\" /></a></div>";
+?>
+<div id="movoutcontainer">
+<div id="movdetails">
+<?php
+if (!empty($movie->imdb_id)) {
+echo "<p class=\"movdetails\"><a href=http://www.imdb.com/title/" . $movie->imdb_id . " target=\"_blank\"> IMDB PAGE </a>";
+}
+echo "<br />";
+echo "<p class=\"movdetails\"><a href=" . $movie->url . " target=\"_blank\"> tmDB PAGE </a>";
+echo "<br />";
+if (!empty($trailer)) {
+echo "<a href=" . $trailer . " target=\"_blank\"> Trailer </a>";
+echo "<br />";
+}
+echo "<br />";
+if (!empty($movie->released)) echo "Release Date: " . $movie->released . "";
+else echo "Release Date: Not Available";
+echo "<br />";
+echo "Rating: " . $movie->rating . "";
+echo "<br />";
+if ($dirname=="") $dirname="Not Available";
+echo "Director: <strong>" . $dirname . "</strong><br /><br />";
+echo "<strong>Plot overview:</strong> <br />";
+if (!empty($movie->overview)){
+echo $movie->overview;
+}
+else echo "Not Available";
+echo "<br />";
+?>
+</div>
+</div>
+</div>
+<?php
+$dirname="Not Available";
+$dirthumb="Not Available";
+$trailer="";
+}
+
+
+
+
+?>
+<div id="footer">
+<br />
+<?php
+include 'footer.phtml';
+?>
+
+</div> <!--closing footer -->
+</div> <!-- closing right -->
+
+
+</div> <!-- closing content -->
+
+
+
+</div> <!-- closing wrap -->
+
+</body>
+
+</html>

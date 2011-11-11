@@ -1,0 +1,211 @@
+<?php
+session_start();
+/* Name: Ashraf Mirza & Andrew Sicard-Woodall
+  class: INT525A
+  Final Project - Movie Collection
+*/
+
+include 'dbclass.phtml';
+if(!isset($_SESSION[userid])) {
+  $redirect="yes";
+  header( "refresh:5;url=index.phtml" );
+  $redirectmsg="You are not logged in, you are being redirected to the login page. If you are not redirected click on Home above.";
+}
+?>
+<?php
+/* MySQL connection */
+    $db = new Database;
+  
+					
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title><?php $_SESSION[uname] ?> - Movie Collection</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Language" content="English" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="/css/tmdb.css" media="screen" />
+</head>
+<?php
+$errorcount=0;
+if(isset($_POST[submit])) { 
+if(trim($_POST[movname])=='') {
+			$movnameerror="Please enter something in the movie name field <br />";
+			$errorcount++;
+		}
+		}
+
+$sql = "SELECT background FROM movf ORDER BY RAND() LIMIT 1";
+$res= $db->query($sql);
+if($res)
+{
+while($row=$res->fetch_object()) {
+$bg=$row->background;
+}
+}
+if ($bg) { echo '<body style="background:#FFFFFF url('.$bg.') repeat-y fixed top center; font-family: Verdana, Tahoma, Arial, sans-serif; width: 100%; font-size: 12px; padding: 0; margin: 0; color: #FFF5EE; line-height: 20px;" >';
+}
+else {
+echo "<body>";
+}
+?>
+<div id="wrap">
+<div id="headerbg">
+<div id="header">
+<h1><a href="/movie.html">Movie Collection</a></h1>
+
+</div>
+</div>
+<div id="menu">
+<ul>
+    <li><a href="index.phtml">Home</a></li>
+    <li><a href="logout.phtml">Logout</a></li>
+	
+<!-- Add Menu Items here if needed -->
+</ul>
+</div>
+
+<div id="content">
+<!-- Left Navigation -->
+<div id="left">
+<h2>Links: </h2>
+<div class="box">
+<ul>
+<li><a href="movie.phtml">Your Collection</a></li>  
+<li><a href="addmovie.phtml">Add a Movie</a></li>  
+</ul>
+</div>
+</div>
+
+	
+<div id="right">
+<h2>Add a Movie</h2>
+<?php
+
+if(!isset($_SESSION[userid])) {
+echo "<span id=\"activmsg\">".$redirectmsg."</span>";
+}
+else 
+	{
+		if(!isset($_POST[submit]) || ($errorcount>0)){
+		
+	?>
+			<form id="form" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+			<fieldset>
+				<legend>Movie Search</legend>
+					
+					<span id="errormsg"> * All Fields are required </span>
+					<br /> <br /> <br />
+					<label for="movname">Movie name:</label>
+					<input type="text" name="movname" id="movname" value="<?php $_POST[movname] ?>"/> <?php "<span id=\"errormsg\">" . $movnameerror ."</span>" ?>
+					<br />
+					<?php if($errorcount>0) echo "<span id=\"errormsg\"> There are ".$errorcount." errors in the form please fix them before you can proceed. </span> <br />";?>
+					<label for="submit"></label>
+					<input type="submit" name="submit" value="Submit" class="button">
+				</fieldset>
+			</form>
+<?php
+		
+		}
+		else 
+		{
+		$_SESSION[keyword]=addslashes(trim($_POST[movname]));
+		$sql = 'SELECT * FROM movf WHERE MATCH(moviename) AGAINST ("*'.$_SESSION[keyword].'*" in BOOLEAN MODE)';
+		$res= $db->query($sql);
+		if($res) {
+			$nofrows=$db->numrows($res);
+			if($nofrows>0){
+						echo "<span id=activmsg>Movies already in our collection, click on poster to add to your collection.</span>;";
+				while ($newArray = $db->fetch_array($res)) {
+				//calculate result # based on page # limit and count each result on page and set vars from associative array
+						$fnum = ((($page * $limit) - $limit) + ($count + 1));
+						$movid = $newArray['movieid'];
+						$movname = $newArray['moviename'];
+						$reldate = $newArray['releasedate'];
+						$plot = $newArray['plot'];
+						$trailer = $newArray['trailer'];
+						$rating = $newArray['rating'];
+						$genre = $newArray['genre'];
+						$imdbid = $newArray['imdb_id'];
+						$studio = $newArray['studio'];
+						$poster = $newArray['poster'];
+						$background = $newArray['background'];
+
+						?>
+						<div id="enclosmov">
+						<?php
+						echo "<h2>";
+						echo $movname;
+						echo "</h2>";
+
+						echo "<div id=\"rightimg\"><a href=addmfinal.phtml?movid=" .$movid. "><img src=\"" . $poster . "\"alt=\"" . $movname . "\" /></a></div>";
+						?>
+						<div id="movoutcontainer">
+						<div id="movdetails">
+						<?php
+						if (!empty($imdbid)) {
+						echo "<p class=\"movdetailsf\"><a href=http://www.imdb.com/title/" . $imdbid . " target=\"_blank\"> IMDB PAGE </a>";
+						}
+						echo "<br />";
+						echo "<p class=\"movdetailsf\"><a href=http://www.themoviedb.org/movie/" . $movid . " target=\"_blank\"> tmDB PAGE </a>";
+						echo "<br />";
+						if (!empty($trailer)) {
+						echo "<a href=" . $trailer . " target=\"_blank\"> Trailer </a>";
+						echo "<br />";
+						}
+						echo "<br />";
+						if (!empty($reldate)) echo "Release Date: " . $reldate . "";
+						else echo "Release Date: Not Available";
+						echo "<br />";
+						
+						echo "Rating: " . $rating . "";
+						echo "<br />";
+						
+						echo "<br /><strong>Plot overview:</strong> <br />";
+							if (!empty($plot)){
+							echo $plot ."<br /><br />";
+							}
+							else echo "Not Available <br /><br />";
+						
+						?>
+						</div>
+						</div>
+						</div>
+						<?php
+						
+						
+						
+					}
+			echo "<span id=\"activmsg\">Can't find the movie you are looking for <a href=\"tmdb.phtml?keyword=".$_SESSION[keyword]."\">Click here</a> to search tmDB for the movie.</span> <br />";
+				}
+			else { 
+			echo "Your search returned 0 results, please click on the link below to search tmDB to search for the movie.";	
+			echo "<span id=\"activmsg\">Can't find the movie you are looking for <a href=\"tmdb.phtml?keyword=".$_SESSION[keyword]."\">Click here</a> to search tmDB for the movie.</span> <br />";
+			}
+			}
+		else echo "HELLO!";
+		}
+	}
+?>
+
+<div id="footer">
+<br />
+<?php
+include 'footer.phtml';
+?>
+
+</div> <!--closing footer -->
+</div> <!-- closing right -->
+
+
+</div> <!-- closing content -->
+
+
+
+</div> <!-- closing wrap -->
+
+</body>
+
+
+</html>

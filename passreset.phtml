@@ -1,0 +1,296 @@
+<?php
+session_start();
+/* Name: Ashraf Mirza & Andrew Sicard-Woodall
+  class: INT525A
+  Final Project - Movie Collection
+*/
+//pass reset
+?>
+<?php
+include 'dbclass.phtml';
+$db = new Database;
+					
+
+$errorcount=0;
+if(isset($_POST[submit])) 
+{
+		if(trim($_POST[username])=='' || strlen(trim($_POST[username])) <6 || strlen(trim($_POST[username])) >12) {
+			$usernameerror="Username must be between 6 and 12 characters. <br />";
+			$errorcount++;
+		}
+		else {
+		$sql= "SELECT username FROM there WHERE username = '".$_POST[username]."'";
+		$res= $db->query($sql);
+		}
+		if ($res) {
+			$nofrows = $db->numrows($res);
+		}
+		if($nofrows=="0") 
+		{
+			$usernameerror="No user like that exists please register by clicking Register above.<br />";
+			$errorcount++;
+		}
+		if(trim($_POST[email])=='') {
+			$emailerror="Please enter an email address in the email address field. <br />";
+			$errorcount++;
+		}
+		else 
+		{
+			if(!eregi("^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-99]+)*(\.[a-z]{2,3})$", $_POST[email])) {
+				$emailerror="The email address you entered is not in the proper format. The format should be username@domain.com. <br />";
+				$errorcount++;
+			}
+			else
+			{
+				$sql= "SELECT * FROM there WHERE email = '".$_POST[email]."' AND username='".$_POST[username]."'";
+				$res2= $db->query($sql);
+			}
+			if ($res2) {
+				$nofrows = $db->numrows($res2);
+				if($nofrows=="0")
+				{
+					$emailerror="This email address doesn't match with your username.<br />";
+					$errorcount++;
+				}
+				elseif ($nofrows=="1") {
+					/*$emailerror="EMAIL IS FINE!";
+					$errorcount++;*/
+				}
+			}
+		}
+		if(!ereg("^[0-9]{2}$", $_POST[dob_month])) 
+			{
+				$dob_month_error="Please choose the month of your birth. <br />";
+				$errorcount++;
+			}
+		
+			if(!ereg("^[0-9]{2}$", $_POST[dob_day])) 
+			{
+			$dob_day_error="Please choose the day of your birth. <br />";
+			$errorcount++;
+			}
+			
+			if(!ereg("^[0-9]{4}$", $_POST[dob_year])) 
+			{
+			$dob_year_error="Please choose the year of your birth. <br />";
+			$errorcount++;
+			}
+			if ($errorcount==0)
+			{
+			$dob=$_POST[dob_year]."-".$_POST[dob_month]."-".$_POST[dob_day];
+			$sql= "SELECT username FROM there WHERE birth_date ='".$dob."' AND username='".$_POST[username]."' AND email='".$_POST[email]."'";
+			$res=$db->query($sql);
+			if($res) 
+				{
+					$nofrows = $db->numrows($res);
+					if($nofrows=="0") {
+					$dob_month_error="Your birthdate does not match the original one you provided. Please try again or re-register. <br />";
+					$errorcount++;
+					}
+				}
+				if($nofrows=="1") {
+				$check= "SELECT * FROM there WHERE birth_date ='".$dob."' AND username='".$_POST[username]."' AND email='".$_POST[email]."' AND activate_status='0'";
+					$resc=$db->query($check);
+					if($resc)
+					{
+						$nofrows=$db->numrows($resc);
+						if($nofrows=="1")
+						{
+							$dob_day_error="Your account has not been activated, please check your account a new activation email has been sent.";
+							$errorcount++;
+							while ($newArray = $db->fetch_array($res)) {
+								$bday= $newArray['birth_date'];
+								$fname=$newArray['first_name'];
+								$lname=$newArray['last_name'];
+								}
+								$uname=trim($_POST[username]);
+								$email=trim($_POST[email]);
+								$activecode=md5($uname,$bday);
+								$hash=md5($email);
+								require_once('phpmailer/class.phpmailer.php');
+								$mail             = new PHPMailer();
+					
+								$mail->IsSMTP(); // telling the class to use SMTP
+								$mail->Host       = "smtp.gmail.com"; // SMTP server
+								$mail->SMTPDebug  = 0;                     // enables SMTP debug information (for testing)																	   // 1 = errors and messages
+																		   // 2 = messages only
+								$mail->SMTPAuth   = true;                  // enable SMTP authentication
+								$mail->SMTPSecure = "ssl";                 // sets the prefix to the servier
+								$mail->Host       = "smtp.gmail.com";      // sets GMAIL as the SMTP server
+								$mail->Port       = 465;                   // set the SMTP port for the GMAIL server
+								$mail->Username   = "movcoll@gmail.com";  // GMAIL username
+								$mail->Password   = "jamesbond";            // GMAIL password
+
+								$mail->SetFrom('movcoll@gmail.com', 'Movie Collection');
+
+								$mail->AddReplyTo("movcoll@gmail.com","Movie Collection");
+
+								$mail->Subject    = "Hello $fname $lname, this is a resend of your activation email. Please activate your Movie Collection account!";
+								$body = "Hello $fname $lname,<br />You have been registered and need to activate your account. Click the link below or paste it into the URL bar of your browser<br />http://main/phtml/tmdb/activate.phtml?activate=".$activecode."&hash=".$hash."<br />Thanks!";
+								//$mail->AltBody    = "To view the message, please use an HTML compatible email viewer!"; // optional, comment out and test
+
+								$mail->MsgHTML($body);
+
+								$address = $email;
+								$mail->AddAddress($address, $uname);
+
+								if(!$mail->Send()) {
+								  $activmsg= "Mailer Error: " . $mail->ErrorInfo;
+								  $activmsg2= "<span id=\"activmsg\">Could not sign you up at this time please try again later.</span>";
+								} 
+								else {
+										$dob_month_error="The activation email has been re-sent"; //msg sent!
+									}
+						}
+						elseif($nofrows=="0")
+						{
+							$check= "SELECT * FROM there WHERE birth_date ='".$dob."' AND username='".$_POST[username]."' AND email='".$_POST[email]."' AND activate_status='1'";
+							$resc=$db->query($check);
+							if($resc)
+							{
+								
+								$nofrows=$db->numrows($resc);
+								if($nofrows=="1")
+								{
+									while ($newArray = $db->fetch_array($resc)) {
+									$bday= $newArray['birth_date'];
+									$userid= $newArray['userid'];
+									$uname=trim($_POST[username]);
+									$email=trim($_POST[email]);
+									}
+								$activate=md5($uname.$bday);
+								$redirectmsg="You'll be redirected in about 5 secs. If not, click <a href=\"passfinal.phtml?activate=".$activate."\">here</a>.";
+								$msg= "<span id=\"activmsg\">".$redirectmsg."</span>";
+								$redirect="yes";
+								}
+								else
+								{
+								$dob_year_error="There was an undetermined error. Please email movcoll@gmail.com with your username and email or re-register";
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+			
+
+if($redirect=="yes")
+{
+  header( "refresh:5;url=passfinal.phtml?activate=".$activate."" );
+  $redirectmsg='Your password is ready to be reset, you\'ll be redirected in about 5 secs. If not, click <a href="passfinal.phtml?activate=$activate">here</a>.';
+}
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Password Reset - Movie Collection</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Language" content="English" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="/css/tmdb.css" media="screen" />
+</head>
+<?php
+$sql = "SELECT background FROM movf ORDER BY RAND() LIMIT 1";
+$res= $db->query($sql);
+if($res)
+{
+while($row=$res->fetch_object()) {
+$bg=$row->background;
+}
+}
+
+if ($bg) { echo '<body style="background:#FFFFFF url('.$bg.') repeat-y fixed top center; font-family: Verdana, Tahoma, Arial, sans-serif; width: 100%; font-size: 12px; padding: 0; margin: 0; color: #FFF5EE; line-height: 20px;" >';
+}
+else {
+echo "<body>";
+}
+?>
+<div id="wrap">
+<div id="headerbg">
+<div id="header">
+<h1><a href="/movie.html">Movie Collection</a></h1>
+
+</div>
+</div>
+<div id="menu">
+<ul>
+    <li><a href="index.phtml">Home</a></li>
+	<li><a href="register.phtml">Register</a></li>
+	<li><a href="index.phtml">Login</a></li>
+<!-- Add Menu Items here if needed -->
+</ul>
+</div>
+
+<div id="content">
+<!-- Left Navigation -->
+<div id="left">
+<h2>Categories: </h2>
+<div class="box">
+<ul>
+<li><a href="#">Testing</a></li>  
+</ul>
+</div>
+</div>
+
+<?php
+
+	
+	
+?>
+	
+<div id="right">
+<h2>Password Reset</h2>
+<?php 
+echo $msg;
+if(!isset($_POST[submit]) || ($errorcount>0)) {
+?>
+<form id="form" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+	<fieldset>
+		<legend>Password Reset</legend>
+		<span id="errormsg"> * All Fields are required </span>
+		<br /> <br /> <br />
+			<label for="username">Username:</label>
+				<input type="text" name="username" id="username" value="<?php $_POST[username] ?>"/> <?php "<span id=\"errormsg\">" . $usernameerror ."</span>" ?>
+				<br />
+			
+			<label for="email">E-mail Address:</label> 
+				<input type="text" name="email" id="email" value="<?php $_POST[email] ?>"/> <?php "<span id=\"errormsg\">" .$emailerror ."</span>" ?>
+				<br />
+			<?php
+			include 'dob.phtml';
+			?>
+						
+			<?php if($errorcount>0) echo "<span id=\"errormsg\"> There are <strong>".$errorcount." errors</strong> in the form please fix them before you can proceed. </span> <br />";?>
+			<label for="submit"></label>
+			<input type="submit" name="submit" value="Submit" class="button">	
+	</fieldset>
+</form>
+<?php
+}
+echo $activmsg;
+echo $activmsg2;
+?>
+		
+
+<div id="footer">
+<br />
+<?php
+include 'footer.phtml';
+
+?>
+
+</div> <!--closing footer -->
+</div> <!-- closing right -->
+
+
+</div> <!-- closing content -->
+
+
+
+</div> <!-- closing wrap -->
+
+</body>
+
+</html>

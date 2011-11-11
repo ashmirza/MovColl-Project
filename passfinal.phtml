@@ -1,0 +1,176 @@
+<?php
+session_start();
+/* Name: Ashraf Mirza & Andrew Sicard-Woodall
+  class: INT525A
+  Final Project - Movie Collection
+*/
+//password reset
+?>
+<?php
+include 'dbclass.phtml';
+					
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Password Reset Final - Movie Collection</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Language" content="English" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="/css/tmdb.css" media="screen" />
+</head>
+<?php
+$db = new Database;
+$sql = "SELECT background FROM movf ORDER BY RAND() LIMIT 1";
+$res= $db->query($sql);
+if($res)
+{
+while($row=$res->fetch_object()) {
+$bg=$row->background;
+}
+}
+
+if ($bg) { echo '<body style="background:#FFFFFF url('.$bg.') repeat-y fixed top center; font-family: Verdana, Tahoma, Arial, sans-serif; width: 100%; font-size: 12px; padding: 0; margin: 0; color: #FFF5EE; line-height: 20px;" >';
+}
+else {
+echo "<body>";
+}
+?>
+<div id="wrap">
+<div id="headerbg">
+<div id="header">
+<h1><a href="/movie.html">Movie Collection</a></h1>
+
+</div>
+</div>
+<div id="menu">
+<ul>
+    <li><a href="index.phtml">Home</a></li>
+	<li><a href="register.phtml">Register</a></li>
+	<li><a href="index.phtml">Login</a></li>
+<!-- Add Menu Items here if needed -->
+</ul>
+</div>
+
+<div id="content">
+<!-- Left Navigation -->
+<div id="left">
+<h2>Categories: </h2>
+<div class="box">
+<ul>
+<li><a href="#">Testing</a></li>  
+</ul>
+</div>
+</div>
+
+	
+<div id="right">
+<h2>Activate Account</h2>
+<?php
+if(!isset($_GET['activate'])) {
+echo "<span id=\"activmsg\">There was an error in processing your password reset request. The link was not proper, please try again</span>";
+}
+else 
+	{
+		$check="SELECT * FROM there WHERE activecode='".$_GET['activate']."' AND activate_status='1'";
+		$activeform=$_GET[activate];
+		$res= $db->query($check);
+		if ($res) {
+			$nofrows = $db->numrows($res);
+		}
+		if($nofrows=1) {
+		while ($newArray = $db->fetch_array($res)) {
+									$userid= $newArray['userid'];
+									$uname= $newArray['username'];
+									$email=$newArray['email'];
+									$activecode=$newArray['activecode'];
+									}
+		if(isset($_POST[submit])) {
+		
+		if(trim($_POST[password])=='' || strlen(trim($_POST[password])) <6) {
+			$passwderror="Your password must be at least 6 characters long. <br />";
+			$errorcount++;
+		}
+		elseif(!ereg("^[A-Za-z0-9_!@#$%^*]{6,12}$", trim($_POST[password]))) {
+			$passwderror="Your password must be 6-12 least 6 characters long, you have some some incompatible text in your password Please only use Letters, numbers and the following special characters \"!@#$%^&*\". <br />";
+			$errorcount++;
+		}
+		if(trim($_POST[password])!=trim($_POST[confpassword])) {
+			$cpasswderror="The two passwords do not match <br />";
+			$errorcount++;
+		}
+		}
+		if((!isset($_POST[submit])) || ($errorcount>0) && ($passfinal==0)) {
+		?>
+		<form id="form" method="post" action="<?php echo $_SERVER['PHP_SELF']."?activate=".$activeform.""; ?>">
+			<fieldset>
+				<legend>Password Reset</legend>
+				<span id="errormsg"> * All Fields are required </span>
+				<br /> <br /> <br />
+			
+					<label for="passwd">Password:</label> 
+					<input type="password" name="password" id="password" /> <?php "<span id=\"errormsg\">" .$passwderror ."</span>" ?>
+					<br />
+					
+					<label for="cpasswd">Confirm Password:</label> 
+					<input type="password" name="confpassword" id="confpassword" /> <?php "<span id=\"errormsg\">" .$cpasswderror ."</span>" ?>
+					<br />
+					
+					<input type="hidden" name="activatecode" id="activatecode" value="<?php $activecode ?>" />
+						
+					<?php if($errorcount>0) echo "<span id=\"errormsg\"> There are <strong>".$errorcount." errors</strong> in the form please fix them before you can proceed. </span> <br />";?>
+					<label for="submit"></label>
+					<input type="submit" name="submit" value="Submit" class="button">	
+			</fieldset>
+		</form>
+		<?php
+		}	
+		if((isset($_POST[submit])) && ($errorcount==0)) {
+			$sql="UPDATE there SET passwd='".md5($_POST[password])."' WHERE activecode='".$_GET[activate]."' AND activate_status='1'";
+			$res= $db->query($sql);
+			if($res)
+			{
+			if ($db->rowsaffected()==1) 
+				{
+					$passfinal=1;
+					echo "<span id=\"activmsg\"><strong>Congratulations</strong>, Your password was reset please login with your new password</span>";
+				}
+				elseif ($db->rowsaffected()==0)
+				{
+					$passfinal=0;
+					echo "<span id=\"activmsg\">We could not find your account, please register again or email <strong>movcoll@gmail.com</strong> with your email to see if your account was deleted.</span>";
+				}
+			}
+			else
+			{
+					$passfinal=0;
+				echo "<span id=\"activmsg\">ERROR TRY AGAIN LATER</span>";
+			}
+		}
+		
+		
+		
+	}
+}	
+?>
+
+<div id="footer">
+<br />
+<?php
+include 'footer.phtml';
+?>
+
+</div> <!--closing footer -->
+</div> <!-- closing right -->
+
+
+</div> <!-- closing content -->
+
+
+
+</div> <!-- closing wrap -->
+
+</body>
+
+
+</html>

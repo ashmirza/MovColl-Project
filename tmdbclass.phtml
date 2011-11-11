@@ -1,0 +1,43 @@
+<?php
+//TMDB search class
+//Returns search results from tmDB using API
+ 
+class tmdb
+{
+	
+    
+    private $lang ='en';
+    private $api_url = 'http://api.themoviedb.org/2.1/';
+    private $apikey = 'df57507099382b3c4d9e392444e1c4c7';
+ 
+	public function Moviesearch($movname)
+	{
+		return $this->_tmdbAPI('Movie.search', $movname);
+	}
+ 
+	public function getMovie($id)
+	{
+		return $this->_tmdbAPI('Movie.getInfo', $id);
+	}
+ 
+    public function getbg($xml)
+    {
+        for($i=0;$i<sizeof($xml->movies->movie[0]->images->image);$i++) {
+            foreach($xml->movies->movie[0]->images->image[$i]->attributes() as $a => $b) {
+                if ($a=="type" && $b=="backdrop" && $xml->movies->movie[0]->images->image[$i]['size']=="original") {
+                $bg=$xml->movies->movie[0]->images->image[$i]['url'];
+                }
+            }
+        }
+        return $bg;
+    }
+    
+	private function _tmdbAPI($function, $movie)
+	{
+		$url = $this->api_url.$function.'/'.$this->lang.'/xml/'.$this->apikey.'/'.urlencode($movie);
+ 		$results = file_get_contents($url);
+        $results = (string) $results;
+        return simplexml_load_string($results);
+	}
+ 
+}
