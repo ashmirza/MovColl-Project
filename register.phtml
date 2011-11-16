@@ -253,7 +253,7 @@ echo "<h2>Account Activation</h2>";
 						$sql= "INSERT there (username, passwd, activate_status, first_name, last_name, birth_date, email, activecode, emailhash) VALUES ('".$uname."', '".$passwd."', '0', '".$fname."', '".$lname."', '".$dob."', '".$email."', '".$activecode."', '".$hash."' )";
 						$res=$db->query($sql);
 						if ($res===TRUE) {
-						$sql = "CREATE TABLE `movies`.`".$uname."movies` (`useridmovieadded` SMALLINT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, `movieid` SMALLINT(11) NOT NULL, `favstatus` TINYINT(1) NOT NULL, `dateadded` DATE NOT NULL, `loanstatus` VARCHAR(200) NOT NULL) ENGINE = MyISAM";
+						$sql = "CREATE TABLE `movies`.`".$uname."movies` (`useridmovieadded` SMALLINT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, `movieid` INT(11) NOT NULL, `favstatus` TINYINT(1) NOT NULL, `dateadded` DATE NOT NULL, `loanstatus` VARCHAR(200) NOT NULL) ENGINE = MyISAM";
 						$res=$db->query($sql);
 							if ($res===TRUE) {
 							echo "<span id=\"activmsg\">Congratulations your account has been created, we have sent an email to your email at <strong>" . $_POST[email] . "</strong> with further instructions on your account</span> <br /> <br />";

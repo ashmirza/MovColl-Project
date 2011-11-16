@@ -139,7 +139,7 @@ $res=$db->query($sql);
 if ($res===TRUE) {
 $date=date( 'Y-m-d H:i:s' );
 
-$sql= "INSERT ".$_SESSION[uname]."movies (movieid, favstatus, dateadded, loanstatus) VALUES ('".$tmdbid."', '0', '".$date."', 'In Collection')";
+$sql= "INSERT ".$_SESSION[uname]."movies (movieid, favstatus, dateadded, loanstatus) VALUES ('".addslashes($tmdbid)."', '0', '".$date."', 'In Collection')";
 $res=$db->query($sql);
 for($i=0; $i<count($actorname); $i++) {
 if($actorname[$i]!="") {
