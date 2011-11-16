@@ -74,12 +74,15 @@ echo "<body>";
 <?php
 
 $xml = $tmdb->Moviesearch($_GET['keyword']);
-
-for($i=0;$i<sizeof($xml->movies->movie);$i++) {
+if (sizeof($xml->movies->movie) == 0) { 
+	echo "<p><strong>THERE IS A PROBLEM ASHRAF FIX IT!</strong></php>";
+	}
+	
+for($i=0;$i<sizeof($xml->movies->movie);$i++) 
 foreach($xml->movies->movie[$i]->name as $mov) {
 echo "<p><strong><a href=\"addfinal.phtml?movid=".$xml->movies->movie[$i]->id."\">" . $mov . "</a></strong></p>";
 }
-}
+
 echo "<br />";
 $m=0;
 foreach($xml->movies->movie as $movie) {

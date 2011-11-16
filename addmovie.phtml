@@ -21,7 +21,7 @@ if(!isset($_SESSION[userid])) {
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title><?php $_SESSION[uname] ?> - Movie Collection</title>
+<title><?php echo $_SESSION[uname] ?> - Movie Collection</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta http-equiv="Content-Language" content="English" />
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -98,7 +98,7 @@ else
 					<span id="errormsg"> * All Fields are required </span>
 					<br /> <br /> <br />
 					<label for="movname">Movie name:</label>
-					<input type="text" name="movname" id="movname" value="<?php $_POST[movname] ?>"/> <?php "<span id=\"errormsg\">" . $movnameerror ."</span>" ?>
+					<input type="text" name="movname" id="movname" value="<?php echo $_POST[movname] ?>"/> <?php echo "<span id=\"errormsg\">" . $movnameerror ."</span>" ?>
 					<br />
 					<?php if($errorcount>0) echo "<span id=\"errormsg\"> There are ".$errorcount." errors in the form please fix them before you can proceed. </span> <br />";?>
 					<label for="submit"></label>
